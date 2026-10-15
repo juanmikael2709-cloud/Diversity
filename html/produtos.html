@@ -78,11 +78,29 @@
 
         <!-- GRID DE PRODUTOS: os cards são gerados por js/produtos.js a partir do array "produtos". -->
         <!-- Para adicionar um produto novo, edite a lista "produtos" em js/produtos.js. -->
-        <section id="catalogo" class="p-6 md:p-12 scroll-mt-24">
-            <div id="produtos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Os cards de produto são inseridos aqui automaticamente pelo script -->
-            </div>
-        </section>
+        
+<section id="catalogo" class="p-6 md:p-12 scroll-mt-24">
+
+    <!-- FILTROS POR TAG -->
+        <div id="filtros-tags" class="flex flex-wrap gap-3">
+            <!-- Os botões serão criados pelo JavaScript -->
+        </div>
+
+    <!-- CONTADOR DE PRODUTOS -->
+    <p id="contador-produtos"
+       class="text-xs font-mono text-stone-500 mb-5">
+    </p>
+
+    <!-- GRID DE PRODUTOS -->
+    <div id="produtos-grid"
+         class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- Os cards são inseridos automaticamente -->
+
+    </div>
+
+</section>
+
     </main>
 
     <!-- 🖤 RODAPÉ -->
