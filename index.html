@@ -24,7 +24,24 @@
         body {
             padding-top: 84px;
         }
+        /* Se a intro já foi vista nesta sessão, ela nem chega a aparecer */
+        .sem-intro #intro-screen {
+            display: none;
+        }
     </style>
+
+    <script>
+        // Se a intro já foi vista nesta sessão, esconde a tela preta imediatamente (evita o "flash")
+        try {
+            if (sessionStorage.getItem('introVista')) {
+                // Já viu nesta sessão: esconde a intro
+                document.documentElement.classList.add('sem-intro');
+            } else {
+                // Primeira visita: deixa a intro rodar e marca como vista
+                sessionStorage.setItem('introVista', 'true');
+            }
+        } catch (e) {}
+    </script>
 </head>
 
 <body class="bg-stone-100 min-h-screen flex flex-col items-center p-4 md:p-6 lg:p-8 relative overflow-x-hidden">
@@ -221,7 +238,7 @@
         </div>
     </footer>
 
-    <!-- ⚙️ SCRIPT DA ANIMAÇÃO LATERAL -->
+    <!-- ⚙️ SCRIPT DA ANIMAÇÃO LATERAL (a intro só roda na 1ª visita da sessão; lógica no main.js) -->
     <script src="./js/main.js"></script>
 
 </body>

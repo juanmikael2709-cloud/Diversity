@@ -24,7 +24,25 @@
         body {
             padding-top: 84px;
         }
+        /* Se a intro já foi vista nesta sessão, ela nem chega a aparecer */
+        .sem-intro #intro-screen {
+            display: none;
+        }
     </style>
+
+    <script>
+        // Se a intro já foi vista nesta sessão, esconde a tela preta imediatamente (evita o "flash").
+        // Usa a mesma chave do index.html, então quem troca de idioma também não vê a intro de novo.
+        try {
+            if (sessionStorage.getItem('introVista')) {
+                // Já viu nesta sessão: esconde a intro
+                document.documentElement.classList.add('sem-intro');
+            } else {
+                // Primeira visita: deixa a intro rodar e marca como vista
+                sessionStorage.setItem('introVista', 'true');
+            }
+        } catch (e) {}
+    </script>
 </head>
 
 <body class="bg-stone-100 min-h-screen flex flex-col items-center p-4 md:p-6 lg:p-8 relative overflow-x-hidden">
@@ -196,9 +214,9 @@
             <div>
                 <p class="text-xs font-mono uppercase tracking-widest text-[#14B8A6] mb-4">Navegation</p>
                 <ul class="space-y-2 text-sm text-stone-300">
-                    <li><a href="./index.html" class="hover:text-[#FF8B6B] transition">Home</a></li>
-                    <li><a href="./html/produtos.html" class="hover:text-[#FF8B6B] transition">Products</a></li>
-                    <li><a href="./html/about.html" class="hover:text-[#FF8B6B] transition">About us</a></li>
+                    <li><a href="./index-en.html" class="hover:text-[#FF8B6B] transition">Home</a></li>
+                    <li><a href="./html/produtos-en.html" class="hover:text-[#FF8B6B] transition">Products</a></li>
+                    <li><a href="./html/about-en.html" class="hover:text-[#FF8B6B] transition">About us</a></li>
                 </ul>
             </div>
 
@@ -220,7 +238,7 @@
         </div>
     </footer>
 
-    <!-- ⚙️ SCRIPT DA ANIMAÇÃO LATERAL -->
+    <!-- ⚙️ SCRIPT DA ANIMAÇÃO LATERAL (a intro só roda na 1ª visita da sessão) -->
     <script src="./js/main.js"></script>
 
 </body>
