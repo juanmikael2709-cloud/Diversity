@@ -55,12 +55,12 @@ function criarCardProduto(produto) {
 
 // 🛍️ CONEXÃO COM O SERVIDOR (Substitui a lista estática antiga)
 // 🔴 Endereço do servidor rodando no Render (HTTPS, sem porta customizada)
-const URL_SERVIDOR = "https://diversidade-server.onrender.com";
+const URL_SERVIDOR = "https://diversidade-server-eng.onrender.com";
 const URL_API = `${URL_SERVIDOR}/produtos`;
   
 const grid = document.getElementById('produtos-grid');
 const filtrosTags = document.getElementById('filtros-tags');
-const contadorProdutos = document.getElementById('contador-produtos');
+const contadorProdutos = document.getElementById('contador-produtos'); 
 
 // Tag selecionada no momento
 let tagSelecionada = 'todas';
