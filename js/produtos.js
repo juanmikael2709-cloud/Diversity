@@ -218,7 +218,7 @@ async function carregarProdutosDoServidor() {
             const tags = obterTags(produto);
 
             card.dataset.tags = JSON.stringify(tags);
-            card.href = `${URL_SERVIDOR}/produto?id=${id}`;
+            card.href = `${URL_SERVIDOR}/produto?id=${id}&sid=${encodeURIComponent(Carrinho.sid())}`;
 
             grid.appendChild(card);
         });
