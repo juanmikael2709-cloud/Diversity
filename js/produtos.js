@@ -57,32 +57,190 @@ function criarCardProduto(produto) {
 // 🔴 Endereço do servidor rodando no Render (HTTPS, sem porta customizada)
 const URL_SERVIDOR = "https://diversidade-server.onrender.com";
 const URL_API = `${URL_SERVIDOR}/produtos`;
+  
+const grid = document.getElementById('produtos-grid');
+const filtrosTags = document.getElementById('filtros-tags');
+const contadorProdutos = document.getElementById('contador-produtos');
 
-async function carregarProdutosDoServidor() {
-    const grid = document.getElementById('produtos-grid');
-    
-    try {
-        const resposta = await fetch(URL_API);
-        const dados = await resposta.json();
-        grid.innerHTML = '';
+// Tag selecionada no momento
+let tagSelecionada = 'todas';
 
-        // Object.entries nos dá o ID (chave) e os dados do produto (valor)
-        Object.entries(dados.produtos).forEach(([id, produto]) => {
-            
-            // Criamos o card passando os dados
-            const card = criarCardProduto(produto);
-            
-            // 🔴 Apontamos o link diretamente para a rota do servidor correspondente ao ID
-            card.href = `${URL_SERVIDOR}/produto?id=${id}`;
-            
-            grid.appendChild(card);
-        });
+// Normaliza textos para comparar tags sem diferenciar
+// maiúsculas, minúsculas ou acentos.
+function normalizarTag(texto) {
+    return String(texto)
+        .trim()
+        .toLocaleLowerCase('pt-BR')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+}
 
-    } catch (erro) {
-        console.error("Erro ao buscar produtos da API:", erro);
-        grid.innerHTML = `<p class="text-stone-500 font-mono text-xs col-span-full text-center py-8">Não foi possível carregar os produtos.</p>`;
+// Obtém as tags de cada produto.
+// Aceita tags: ["Camisetas", "Estampas"]
+// ou categoria: "Camisetas"
+function obterTags(produto) {
+    const tags = Array.isArray(produto.tags)
+        ? produto.tags
+        : produto.categoria
+            ? [produto.categoria]
+            : [];
+
+    return [...new Set(
+        tags
+            .filter(tag => typeof tag === 'string' && tag.trim())
+            .map(tag => tag.trim())
+    )];
+}
+
+// Cria o visual dos botões
+function criarBotaoTag(nome, valor) {
+    const botao = document.createElement('button');
+
+    botao.type = 'button';
+    botao.dataset.tag = valor;
+    botao.textContent = nome;
+
+    botao.className =
+        'px-5 py-3 rounded-full border-2 text-xs font-bold ' +
+        'uppercase tracking-wider transition-all duration-200';
+
+    botao.addEventListener('click', () => {
+        tagSelecionada = valor;
+        atualizarFiltros();
+    });
+
+    filtrosTags.appendChild(botao);
+}
+
+// Atualiza a aparência dos filtros e os produtos visíveis
+function atualizarFiltros() {
+    const botoes = filtrosTags.querySelectorAll('button');
+
+    botoes.forEach(botao => {
+        const selecionado = botao.dataset.tag === tagSelecionada;
+
+        botao.classList.toggle('bg-[#FF5A3C]', selecionado);
+        botao.classList.toggle('text-white', selecionado);
+        botao.classList.toggle('border-[#FF5A3C]', selecionado);
+
+        botao.classList.toggle('bg-white', !selecionado);
+        botao.classList.toggle('text-stone-700', !selecionado);
+        botao.classList.toggle('border-stone-200', !selecionado);
+        botao.classList.toggle('hover:border-[#FF5A3C]', !selecionado);
+
+        botao.setAttribute('aria-pressed', String(selecionado));
+    });
+
+    const cards = grid.querySelectorAll('[data-tags]');
+    let quantidadeVisivel = 0;
+
+    cards.forEach(card => {
+        const tags = JSON.parse(card.dataset.tags);
+
+        const mostrar =
+            tagSelecionada === 'todas' ||
+            tags.some(tag => normalizarTag(tag) === tagSelecionada);
+
+        card.classList.toggle('hidden', !mostrar);
+
+        if (mostrar) {
+            quantidadeVisivel++;
+        }
+    });
+
+    contadorProdutos.textContent =
+        `${quantidadeVisivel} produto(s) encontrado(s)`;
+
+    contadorProdutos.className = 'mt-4 text-sm font-mono text-stone-500 col-span-full mb-4';
+
+    let mensagem = document.getElementById('sem-resultados');
+
+    if (quantidadeVisivel === 0) {
+        if (!mensagem) {
+            mensagem = document.createElement('p');
+            mensagem.id = 'sem-resultados';
+            mensagem.className =
+                'text-stone-500 text-sm col-span-full text-center py-8';
+            mensagem.textContent =
+                'Nenhum produto encontrado nesta categoria.';
+            grid.appendChild(mensagem);
+        }
+    } else if (mensagem) {
+        mensagem.remove();
     }
 }
 
-// Executa a busca assim que o script carregar
+async function carregarProdutosDoServidor() {
+    try {
+        const resposta = await fetch(URL_API);
+
+        if (!resposta.ok) {
+            throw new Error(`Erro HTTP: ${resposta.status}`);
+        }
+
+        const dados = await resposta.json();
+
+        grid.innerHTML = '';
+        filtrosTags.innerHTML = '';
+
+        if (!dados.produtos) {
+            throw new Error('A API não retornou a lista de produtos.');
+        }
+
+        // Descobre todas as tags existentes
+        const produtos = Object.entries(dados.produtos);
+
+        const todasTags = new Map();
+
+        produtos.forEach(([id, produto]) => {
+            obterTags(produto).forEach(tag => {
+                const valor = normalizarTag(tag);
+
+                if (valor) {
+                    todasTags.set(valor, tag);
+                }
+            });
+        });
+
+        // Cria o filtro "Todas"
+        criarBotaoTag('Todas', 'todas');
+
+        // Cria um botão para cada tag única
+        [...todasTags.entries()]
+            .sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+            .forEach(([valor, nome]) => {
+                criarBotaoTag(nome, valor);
+            });
+
+        // Cria os cards dos produtos
+        produtos.forEach(([id, produto]) => {
+            const card = criarCardProduto(produto);
+            const tags = obterTags(produto);
+
+            card.dataset.tags = JSON.stringify(tags);
+            card.href = `${URL_SERVIDOR}/produto?id=${id}&sid=${encodeURIComponent(Carrinho.sid())}`;
+
+            grid.appendChild(card);
+        });
+
+        atualizarFiltros();
+    
+    } catch (erro) {
+        console.error('Erro ao carregar produtos:', erro);
+
+        filtrosTags.innerHTML = '';
+
+        grid.innerHTML = `
+            <p class="text-stone-500 font-mono text-xs
+                      col-span-full text-center py-8">
+                Não foi possível carregar os produtos.
+            </p>
+        `;
+
+        contadorProdutos.textContent = '';
+    }
+}
+
+
+// Carrega os produtos assim que o script é executado
 carregarProdutosDoServidor();
